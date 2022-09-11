@@ -1,0 +1,27 @@
+{
+  "title": "AdoPT 🐶🐱",
+  "description": "Descrição do App...",
+  "version": "0.0.1",
+  "contact": {
+    "name": "Ruy Araujo",
+    "url": "https://github.com/Ruy-Araujo"
+  },
+  "license_info": {
+    "name": "MIT",
+    "url": "https://github.com/Ruy-Araujo/adopt-backend/blob/master/LICENSE"
+  },
+  "tags": [
+    {
+      "name": "pets",
+      "description": "Operações com o Pet."
+    },
+    {
+      "name": "user",
+      "description": "Operações com o Usuario.",
+      "externalDocs": {
+        "description": "Items external docs",
+        "url": "https://fastapi.tiangolo.com/"
+      }
+    }
+  ]
+}
