@@ -1,0 +1,27 @@
+{
+  "title": "AdoPT 🐶🐱",
+  "description": "Adopt é um sistema de adoção de animais, voltado para instituições sem fins lucrativos. \\nO projeto constitui de uma vitrine de animais capaz de divulgar e gerenciar os animais disponiveis para adoção, além de um sistema de cadastro de usuários.",
+  "version": "0.0.1",
+  "contact": {
+    "name": "Ruy Araujo",
+    "url": "https://github.com/Ruy-Araujo"
+  },
+  "license_info": {
+    "name": "MIT",
+    "url": "https://github.com/Ruy-Araujo/adopt-backend/blob/master/LICENSE"
+  },
+  "tags": [
+    {
+      "name": "pets",
+      "description": "Operações com o Pet."
+    },
+    {
+      "name": "user",
+      "description": "Operações com o Usuario.",
+      "externalDocs": {
+        "description": "Items external docs",
+        "url": "https://fastapi.tiangolo.com/"
+      }
+    }
+  ]
+}
