@@ -2,3 +2,4 @@
 .venv
 .vscode
 .env
+app/__init__.py

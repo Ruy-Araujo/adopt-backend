@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Body, Depends
+from starlette.responses import RedirectResponse
 from app.auth.jwt_handler import signJWT
-from app.models import PetSchema, UserSchema, UserLoginSchema
-from app.libs import load_metadata
 from app.auth.jwt_bearer import jwtBearer
+from app.libs import load_metadata
+from app.models import PetSchema, UserSchema, UserLoginSchema
+
 
 pets = []  # Lista provisoria de pets deve ser substituida por um banco de dados
 users = []  # Lista provisorio de usuarios deve ser substituida por um banco de dados
@@ -16,6 +18,12 @@ app = FastAPI(
     license_info=metadata["license_info"],
     openapi_tags=metadata["tags"]
 )
+
+
+@app.get("/", include_in_schema=False)
+async def main():
+    response = RedirectResponse(url='/docs')
+    return response
 
 
 @app.get("/pets", tags=["pets"])
@@ -70,6 +78,6 @@ def user_login(user: UserLoginSchema = Body(default=None)):
     return {"logged": False, "error": "User not found"}
 
 
-@app.get("/users", tags=["user"])
-def list_users():
+@app.get("/users", tags=["user"], dependencies=[Depends(jwtBearer())])
+def users_list():
     return users
