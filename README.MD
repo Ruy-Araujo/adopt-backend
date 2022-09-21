@@ -3,6 +3,7 @@
 Adopt é um sistema de adoção de animais, voltado para instituições sem fins lucrativos.  
 O projeto constitui de uma vitrine de animais capaz de divulgar e gerenciar os animais disponiveis para adoção, além de um sistema de cadastro de usuários.
 
+Você pode ver um demostranção do projeto [aqui](https://adoptapp.azurewebsites.net/docs).
 ## Recursos
 
 - [ ] Área Administrativa

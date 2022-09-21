@@ -1,11 +1,13 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Extra
 
 
 class PetSchema(BaseModel):
-    id: int = Field(example=1)
     name: str = Field(example="Fido")
     age: int = Field(example=3)
     type: str = Field(example="dog")
+
+    class Config:
+        extra = Extra.allow
 
 
 class UserSchema(BaseModel):
@@ -16,6 +18,7 @@ class UserSchema(BaseModel):
     password: str = Field(example="123456")
 
     class Config:
+        extra = Extra.allow
         schema_extra = {
             "user_demo": {
                 "first_name": "Fulano",
