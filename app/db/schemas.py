@@ -1,10 +1,20 @@
 from pydantic import BaseModel, Field, Extra
+from typing import Optional
 
 
 class UserBase(BaseModel):
     email: str = Field(example="fulano@email.com")
     primeiro_nome: str = Field(example="Fulano")
     ultimo_nome: str = Field(example="de Tal")
+
+
+class UserUpdate(BaseModel):
+    primeiro_nome: Optional[str] = Field(example="Fulano")
+    ultimo_nome: Optional[str] = Field(example="de Tal")
+
+
+class PasswordUpdate(BaseModel):
+    senha: Optional[str] = Field(example="123456")
 
 
 class UserCreate(UserBase):
