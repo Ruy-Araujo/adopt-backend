@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from app.auth import hashing
 
 from . import models, schemas
 
@@ -16,14 +17,12 @@ def get_users(db: Session, limit: int = 10):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.senha+"notreallyhashed"
-    user = user.dict()
-    user.update({"senha": fake_hashed_password})
-    db_user = models.User(**user)
+    user.senha = hashing.password_hash(user.senha)
+    db_user = models.User(**user.dict())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return {f"User created successfully {db_user}"}
+    return db_user
 
 
 def update_user(db: Session, user_id: int, user: schemas.UserUpdate):
@@ -39,6 +38,17 @@ def update_user(db: Session, user_id: int, user: schemas.UserUpdate):
     db.commit()
     db.refresh(db_user)
     return {f"User updated successfully"}
+
+
+def validate_user(db: Session, user: schemas.UserLogin):
+    db_user = get_user_by_email(db, user.email)
+    if not db_user:
+        return False
+
+    if not hashing.verify_password(user.senha, db_user.senha):
+        return False
+
+    return True
 
 
 def delete_user(db: Session, user_id: int):

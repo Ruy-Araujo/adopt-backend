@@ -5,13 +5,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-driver = os.getenv('DRIVER')
-server = os.getenv('SERVER')
-database = os.getenv('DATABASE')
-username = os.getenv('USER_NAME')
-password = os.getenv('PASSWORD')
+driver = os.getenv('AZURE_SQL_DRIVER')
+server = os.getenv('AZURE_SQL_SERVER')
+port = os.getenv("AZURE_SQL_PORT")
+database = os.getenv('AZURE_SQL_DATABASE')
+username = os.getenv('AZURE_SQL_USER')
+password = os.getenv('AZURE_SQL_PASSWORD')
 
-odbc_str = 'DRIVER='+driver+';SERVER='+server+';PORT=1433;UID='+username+';DATABASE=' + database + ';PWD=' + password
+
+odbc_str = f"DRIVER={driver};SERVER={server};PORT={port};UID={username};DATABASE={database};PWD={password}"
 connect_str = 'mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote_plus(odbc_str)
 
 engine = create_engine(connect_str)
