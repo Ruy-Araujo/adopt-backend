@@ -1,6 +1,4 @@
 import json
-from app.models import UserSchema
-from fastapi import Body
 
 
 def load_file(path):

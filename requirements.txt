@@ -3,3 +3,5 @@ python-multipart==0.0.5
 uvicorn==0.18.3
 PyJWT
 python-decouple
+sqlalchemy
+pyodbc

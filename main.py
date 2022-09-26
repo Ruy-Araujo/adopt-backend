@@ -1,14 +1,17 @@
-from fastapi import FastAPI, Body, Depends
+
+from fastapi import FastAPI, Body, Depends, HTTPException
+from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
+from typing import List, Union
+
 from app.auth.jwt_handler import signJWT
 from app.auth.jwt_bearer import jwtBearer
 from app.libs import load_metadata
-from app.models import PetSchema, UserSchema, UserLoginSchema
-
+from app.models import PetSchema
+from app.db import crud, schemas
+from app.db.database import SessionLocal
 
 pets = []  # Lista provisoria de pets deve ser substituida por um banco de dados
-users = []  # Lista provisorio de usuarios deve ser substituida por um banco de dados
-user_id = 1
 pet_id = 1
 metadata = load_metadata()
 
@@ -20,6 +23,15 @@ app = FastAPI(
     license_info=metadata["license_info"],
     openapi_tags=metadata["tags"]
 )
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @app.get("/", include_in_schema=False)
@@ -89,78 +101,63 @@ def delete_pet(id: int):
 # Login
 ##################
 
-
-def check_user(data: UserLoginSchema):
-    for user in users:
-        if user.email == data.email and user.password == data.password:
-            return True
-        else:
-            False
-
-
 @app.post("/users/login", tags=["access"])
-def user_login(user: UserLoginSchema = Body(default=None)):
-    # Adicionar logica de validação do usuario no banco
-    if check_user(user):
+def user_login(user: schemas.UserLogin = Body(default=None), db: Session = Depends(get_db)):
+    if crud.validate_user(db, user):
         return {
-            "logged": True,
+            "success": True,
             "access_token": signJWT(user.email)
         }
-    return {"logged": False, "error": "User not found"}
+    else:
+        raise HTTPException(status_code=401, detail={"success": False, "error": "Wrong credentials"})
+
 
 ##################
 # Users Endpoints #
 ##################
 
 
-@app.post("/user/register", tags=["user"])
-def user_register(user: UserSchema = Body(default=None)):
-    # Adicionar logica de registro em banco
-    global user_id
-    user.id = user_id
-    users.append(user)
-    user_id += 1
-    return {"message": "User registered successfully!"}
+@app.post("/user/register", tags=["user"], response_model=schemas.User)
+async def user_register(user: schemas.UserCreate = Body(default=None), db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail={"success": False, "message": "Email already registered"})
+
+    db_user = crud.create_user(db=db, user=user)
+
+    if db_user:
+        return db_user
 
 
-@app.get("/users", tags=["user"], dependencies=[Depends(jwtBearer())])
-def list_users():
+@app.get("/users", tags=["user"], response_model=List[schemas.User], dependencies=[Depends(jwtBearer())])
+async def list_users(limit: int = 10, db: Session = Depends(get_db)):
+    users = crud.get_users(db, limit)
     return users
 
 
-@app.get("/user/{id}", tags=["user"], dependencies=[Depends(jwtBearer())])
-def get_user(id: int):
-    for user in users:
-        if user.id == id:
-            return user
+@app.get("/user/{id}", tags=["user"], response_model=schemas.User, dependencies=[Depends(jwtBearer())])
+async def get_user(id: int, db: Session = Depends(get_db)):
+    user = crud.get_user(db, id)
+    if user:
+        return user
     else:
-        return {
-            "error": "User not found"
-        }
+        raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
 
 
-@app.put("/user/{id}", tags=["user"], dependencies=[Depends(jwtBearer())])
-def update_user(id: int, user: UserSchema = Body(default=None)):
-    for index, item in enumerate(users):
-        if item.id == id:
-            temp = users.pop(index)
-            temp = user
-            users.append(temp)
-            return {"message": "User updated successfully!"}
+@app.patch("/user/{id}", tags=["user"], dependencies=[Depends(jwtBearer())])
+async def update_user(id: int, user: schemas.UserUpdate = Body(default=None),  db: Session = Depends(get_db)):
+    db_user = crud.update_user(db, id, user)
+    if db_user:
+        return db_user
     else:
-        return {
-            "error": "User not found"
-        }
+        raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
 
 
 @app.delete("/user/{id}", tags=["user"], dependencies=[Depends(jwtBearer())])
-def delete_user(id: int):
-    global users
-    for i, user in enumerate(users):
-        if user.id == id:
-            users.pop(i)
-            return {'message': f'User deleted successfully'}
+async def delete_user(id: int, db: Session = Depends(get_db)):
+    db_user = crud.delete_user(db, id)
+
+    if db_user:
+        return {"success": True, 'message': 'User deleted successfully'}
     else:
-        return {
-            "error": "User not found"
-        }
+        raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
