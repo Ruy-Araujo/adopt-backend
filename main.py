@@ -108,8 +108,8 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
 ###################
 
 
-@app.post("/pet/register", tags=["pet"], response_model=schemas.Pet)
-def register_pet(pet: schemas.Pet, db: Session = Depends(get_db)):
+@app.post("/pet/register", tags=["pet"], response_model=schemas.Pet, dependencies=[Depends(jwtBearer())])
+def register_pet(pet: schemas.PetBase, db: Session = Depends(get_db)):
     db_pet = crud.create_pet(db=db, pet=pet)
 
     if db_pet:
@@ -130,7 +130,7 @@ def get_pet(id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
 
 
-@app.patch("/pet/{id}", tags=["pet"])
+@app.patch("/pet/{id}", tags=["pet"], dependencies=[Depends(jwtBearer())])
 def update_pet(id: int, pet: schemas.UpdatePet = Body(default=None), db: Session = Depends(get_db)):
     db_pet = crud.update_pet(db, id, pet)
     if db_pet:
@@ -138,7 +138,7 @@ def update_pet(id: int, pet: schemas.UpdatePet = Body(default=None), db: Session
     raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
 
 
-@app.delete("/pet/{id}", tags=["pet"])
+@app.delete("/pet/{id}", tags=["pet"], dependencies=[Depends(jwtBearer())])
 def delete_pet(id: int, db: Session = Depends(get_db)):
     db_pet = crud.delete_pet(db, id)
     if db_pet:
