@@ -7,14 +7,11 @@ from typing import List, Union
 from app.auth.jwt_handler import signJWT
 from app.auth.jwt_bearer import jwtBearer
 from app.libs import load_metadata
-from app.models import PetSchema
 from app.db import crud, schemas
 from app.db.database import SessionLocal
 
-pets = []  # Lista provisoria de pets deve ser substituida por um banco de dados
-pet_id = 1
-metadata = load_metadata()
 
+metadata = load_metadata()
 app = FastAPI(
     title=metadata["title"],
     description=metadata["description"],
@@ -40,72 +37,16 @@ async def main():
     return response
 
 
-###################
-# Pet endpoints
-###################
-
-@app.post("/pet/register", tags=["pet"])
-def register_pet(pet: PetSchema):
-    # Adicionar local de registro em banco
-    global pet_id
-    pet.id = pet_id
-    pet_id += 1
-    pets.append(pet)
-    return {"message": "Pet registered successfully!"}
-
-
-@app.get("/pets", tags=["pet"])
-def list_pets():
-    # Adicionar logica de busca no banco
-    return pets
-
-
-@app.get("/pet/{id}", tags=["pet"])
-def get_pet(id: int):
-    # Adicionar local de registro em banco
-    for pet in pets:
-        if pet.id == id:
-            return pet
-        else:
-            return {"error": "Pet not found"}
-
-
-@app.put("/pet/{id}", tags=["pet"])
-def update_pet(id: int, pet: PetSchema = Body(default=None)):
-    for i, item in enumerate(pets):
-        if item.id == id:
-            temp = pets.pop(i)
-            temp = pet
-            pets.append(temp)
-            return {"message": "Pet updated successfully!"}
-    else:
-        return {
-            "error": "Pet not found"
-        }
-
-
-@app.delete("/pet/{id}", tags=["pet"])
-def delete_pet(id: int):
-    global pets
-    for i, pet in enumerate(pets):
-        if pet.id == id:
-            pets.pop(i)
-            return {'message': f'Pet deleted successfully'}
-    else:
-        return {
-            "error": "User not found"
-        }
-
-
 ##################
 # Login
 ##################
 
-@app.post("/users/login", tags=["access"])
+@app.post("/login", tags=["access"])
 def user_login(user: schemas.UserLogin = Body(default=None), db: Session = Depends(get_db)):
     if crud.validate_user(db, user):
         return {
             "success": True,
+            "expires": 1440,
             "access_token": signJWT(user.email)
         }
     else:
@@ -161,3 +102,46 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
         return {"success": True, 'message': 'User deleted successfully'}
     else:
         raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
+
+###################
+# Pet endpoints
+###################
+
+
+@app.post("/pet/register", tags=["pet"], response_model=schemas.Pet)
+def register_pet(pet: schemas.Pet, db: Session = Depends(get_db)):
+    db_pet = crud.create_pet(db=db, pet=pet)
+
+    if db_pet:
+        return db_pet
+
+
+@app.get("/pets", tags=["pet"], response_model=List[schemas.Pet])
+def list_pets(limit: int = 10, db: Session = Depends(get_db)):
+    pets = crud.get_pets(db, limit)
+    return pets
+
+
+@app.get("/pet/{id}", tags=["pet"], response_model=schemas.Pet)
+def get_pet(id: int, db: Session = Depends(get_db)):
+    pet = crud.get_pet(db, id)
+    if pet:
+        return pet
+    raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
+
+
+@app.patch("/pet/{id}", tags=["pet"])
+def update_pet(id: int, pet: schemas.UpdatePet = Body(default=None), db: Session = Depends(get_db)):
+    db_pet = crud.update_pet(db, id, pet)
+    if db_pet:
+        return {"success": True, "message": "Pet updated successfully"}
+    raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
+
+
+@app.delete("/pet/{id}", tags=["pet"])
+def delete_pet(id: int, db: Session = Depends(get_db)):
+    db_pet = crud.delete_pet(db, id)
+    if db_pet:
+        return {"success": True, "message": "Pet deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
