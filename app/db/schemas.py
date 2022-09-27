@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, Extra
 from typing import Optional
 
 
+# User Schemas
 class UserBase(BaseModel):
     email: str = Field(example="fulano@email.com")
 
@@ -29,11 +30,30 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
+# Pet Schemas
 
-class PetSchema(BaseModel):
-    name: str = Field(example="Fido")
-    age: int = Field(example=3)
-    type: str = Field(example="dog")
+
+class PetBase(BaseModel):
+    nome: str = Field(example="Fido")
+    idade: int = Field(example=2)
+    especie: str = Field(example="Cachorro")
+    raca: str = Field(example="Vira-lata")
+    sexo: str = Field(example="Macho")
+    observacoes: str = Field(example="Cachorro muito brincalhão")
+    adotado: bool = Field(example=False)
+
+
+class UpdatePet(BaseModel):
+    idade: Optional[int] = Field(example=2)
+    especie: Optional[str] = Field(example="Cachorro")
+    raca: Optional[str] = Field(example="Vira-lata")
+    sexo: Optional[str] = Field(example="Macho")
+    observacoes: Optional[str] = Field(example="Cachorro muito brincalhão")
+    adotado: Optional[bool] = Field(example=False)
+
+
+class Pet(PetBase):
+    id: int = Field(example=1)
 
     class Config:
-        extra = Extra.allow
+        orm_mode = True

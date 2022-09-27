@@ -18,3 +18,21 @@ class User(Base):
         server_default=FetchedValue(),
         nullable=False,
     )
+
+
+class Pet(Base):
+    __tablename__ = "animais"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    nome = Column(String, nullable=False)
+    idade = Column(Integer)
+    especie = Column(String)
+    raca = Column(String)
+    sexo = Column(String)
+    observacoes = Column(String)
+    adotado = Column(Boolean, default=False)
+    data_cadastro = Column(
+        TIMESTAMP().with_variant(DATETIME2, "mssql"),
+        server_default=FetchedValue(),
+        nullable=False,
+    )

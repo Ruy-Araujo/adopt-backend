@@ -4,6 +4,7 @@ from app.auth import hashing
 from . import models, schemas
 
 
+# User
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -57,5 +58,47 @@ def delete_user(db: Session, user_id: int):
         return None
 
     db.delete(db_user)
+    db.commit()
+    return True
+
+
+# Pet
+def get_pet(db: Session, pet_id: int):
+    return db.query(models.Pet).filter(models.Pet.id == pet_id).first()
+
+
+def get_pets(db: Session, limit: int = 10):
+    return db.query(models.Pet).order_by(None).limit(limit).all()
+
+
+def create_pet(db: Session, pet: schemas.PetBase):
+    db_pet = models.Pet(**pet.dict())
+    db.add(db_pet)
+    db.commit()
+    db.refresh(db_pet)
+    return db_pet
+
+
+def update_pet(db: Session, pet_id: int, pet: schemas.PetBase):
+    db_pet = get_pet(db, pet_id)
+    if not db_pet:
+        return None
+
+    pet_data = pet.dict(exclude_unset=True)
+    for key, value in pet_data.items():
+        setattr(db_pet, key, value)
+
+    db.add(db_pet)
+    db.commit()
+    db.refresh(db_pet)
+    return True
+
+
+def delete_pet(db: Session, pet_id: int):
+    db_pet = get_pet(db, pet_id)
+    if not db_pet:
+        return None
+
+    db.delete(db_pet)
     db.commit()
     return True

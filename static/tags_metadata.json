@@ -1,7 +1,7 @@
 {
   "title": "AdoPT 🐶🐱",
-  "description": "Adopt é um sistema de adoção de animais, voltado para instituições sem fins lucrativos. \\nO projeto constitui de uma vitrine de animais capaz de divulgar e gerenciar os animais disponiveis para adoção, além de um sistema de cadastro de usuários.",
-  "version": "0.0.1",
+  "description": "Adopt é um sistema de adoção de animais, voltado para instituições sem fins lucrativos. O projeto constitui de uma vitrine de animais capaz de divulgar e gerenciar os animais disponiveis para adoção, além de um sistema de cadastro de usuários.",
+  "version": "0.0.2",
   "contact": {
     "name": "Ruy Araujo",
     "url": "https://github.com/Ruy-Araujo"
@@ -12,20 +12,16 @@
   },
   "tags": [
     {
-      "name": "pet",
-      "description": "Operações com o Pet."
-    },
-    {
       "name": "access",
       "description": "Operações de Login."
     },
     {
       "name": "user",
-      "description": "Operações com o Usuario.",
-      "externalDocs": {
-        "description": "Items external docs",
-        "url": "https://fastapi.tiangolo.com/"
-      }
+      "description": "Operações com o Usuario."
+    },
+    {
+      "name": "pet",
+      "description": "Operações com o Pet."
     }
   ]
 }
