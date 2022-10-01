@@ -41,14 +41,11 @@ async def main():
 # Login
 ##################
 
-@app.post("/login", tags=["access"])
+@app.post("/login", tags=["access"], response_model=schemas.UserResponse[schemas.User])
 def user_login(user: schemas.UserLogin = Body(default=None), db: Session = Depends(get_db)):
-    if crud.validate_user(db, user):
-        return {
-            "success": True,
-            "expires": 1440,
-            "access_token": signJWT(user.email)
-        }
+    db_user = crud.validate_user(db, user)
+    if db_user:
+        return schemas.UserResponse[schemas.User](success=True, content=db_user, access_token=signJWT(user.email), expires=1440)
     else:
         raise HTTPException(status_code=401, detail={"success": False, "error": "Wrong credentials"})
 
@@ -58,7 +55,7 @@ def user_login(user: schemas.UserLogin = Body(default=None), db: Session = Depen
 ##################
 
 
-@app.post("/user/register", tags=["user"], response_model=schemas.User)
+@app.post("/user/register", tags=["user"], response_model=schemas.UserResponse[schemas.User])
 async def user_register(user: schemas.UserCreate = Body(default=None), db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
@@ -67,39 +64,39 @@ async def user_register(user: schemas.UserCreate = Body(default=None), db: Sessi
     db_user = crud.create_user(db=db, user=user)
 
     if db_user:
-        return db_user
+        return schemas.UserResponse[schemas.User](success=True, content=db_user, access_token=signJWT(user.email), expires=1440)
 
 
-@app.get("/users", tags=["user"], response_model=List[schemas.User], dependencies=[Depends(jwtBearer())])
+@app.get("/users", tags=["user"], response_model=schemas.BaseResponse[List[schemas.User]], dependencies=[Depends(jwtBearer())])
 async def list_users(limit: int = 10, db: Session = Depends(get_db)):
     users = crud.get_users(db, limit)
-    return users
+    return schemas.BaseResponse[List[schemas.User]](success=True, content=users)
 
 
-@app.get("/user/{id}", tags=["user"], response_model=schemas.User, dependencies=[Depends(jwtBearer())])
+@app.get("/user/{id}", tags=["user"], response_model=schemas.BaseResponse[schemas.User], dependencies=[Depends(jwtBearer())])
 async def get_user(id: int, db: Session = Depends(get_db)):
     user = crud.get_user(db, id)
     if user:
-        return user
+        return schemas.BaseResponse[schemas.User](success=True, content=user, message="User found")
     else:
         raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
 
 
-@app.patch("/user/{id}", tags=["user"], dependencies=[Depends(jwtBearer())])
+@app.patch("/user/{id}", tags=["user"], response_model=schemas.BaseResponse[schemas.User], dependencies=[Depends(jwtBearer())])
 async def update_user(id: int, user: schemas.UserUpdate = Body(default=None),  db: Session = Depends(get_db)):
     db_user = crud.update_user(db, id, user)
     if db_user:
-        return db_user
+        return schemas.BaseResponse[schemas.User](success=True, content=db_user)
     else:
         raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
 
 
-@app.delete("/user/{id}", tags=["user"], dependencies=[Depends(jwtBearer())])
+@app.delete("/user/{id}", tags=["user"], response_model=schemas.BaseResponse[schemas.User], dependencies=[Depends(jwtBearer())])
 async def delete_user(id: int, db: Session = Depends(get_db)):
     db_user = crud.delete_user(db, id)
 
     if db_user:
-        return {"success": True, 'message': 'User deleted successfully'}
+        return schemas.BaseResponse[schemas.User](success=True, content=db_user)
     else:
         raise HTTPException(status_code=404, detail={"success": False, "message": "User not found"})
 
@@ -108,40 +105,40 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
 ###################
 
 
-@app.post("/pet/register", tags=["pet"], response_model=schemas.Pet, dependencies=[Depends(jwtBearer())])
+@app.post("/pet/register", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
 def register_pet(pet: schemas.PetBase, db: Session = Depends(get_db)):
     db_pet = crud.create_pet(db=db, pet=pet)
 
     if db_pet:
-        return db_pet
+        return schemas.BaseResponse[schemas.Pet](success=True, content=db_pet)
 
 
-@app.get("/pets", tags=["pet"], response_model=List[schemas.Pet])
+@app.get("/pets", tags=["pet"], response_model=schemas.BaseResponse[List[schemas.Pet]], dependencies=[Depends(jwtBearer())])
 def list_pets(limit: int = 10, db: Session = Depends(get_db)):
     pets = crud.get_pets(db, limit)
-    return pets
+    return schemas.BaseResponse[List[schemas.Pet]](success=True, content=pets)
 
 
-@app.get("/pet/{id}", tags=["pet"], response_model=schemas.Pet)
+@app.get("/pet/{id}", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
 def get_pet(id: int, db: Session = Depends(get_db)):
-    pet = crud.get_pet(db, id)
-    if pet:
-        return pet
+    db_pet = crud.get_pet(db, id)
+    if db_pet:
+        return schemas.BaseResponse[schemas.Pet](success=True, content=db_pet)
     raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
 
 
-@app.patch("/pet/{id}", tags=["pet"], dependencies=[Depends(jwtBearer())])
+@app.patch("/pet/{id}", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
 def update_pet(id: int, pet: schemas.UpdatePet = Body(default=None), db: Session = Depends(get_db)):
     db_pet = crud.update_pet(db, id, pet)
     if db_pet:
-        return {"success": True, "message": "Pet updated successfully"}
+        return schemas.BaseResponse[schemas.Pet](success=True, content=db_pet)
     raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
 
 
-@app.delete("/pet/{id}", tags=["pet"], dependencies=[Depends(jwtBearer())])
+@app.delete("/pet/{id}", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
 def delete_pet(id: int, db: Session = Depends(get_db)):
     db_pet = crud.delete_pet(db, id)
     if db_pet:
-        return {"success": True, "message": "Pet deleted successfully"}
+        return schemas.BaseResponse[schemas.Pet](success=True, content=db_pet)
     else:
         raise HTTPException(status_code=404, detail={"success": False, "message": "Pet not found"})
