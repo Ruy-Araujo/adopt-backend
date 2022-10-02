@@ -55,7 +55,7 @@ def user_login(user: schemas.UserLogin = Body(default=None), db: Session = Depen
 ##################
 
 
-@app.post("/user/register", tags=["user"], response_model=schemas.UserResponse[schemas.User])
+@app.post("/user/register", tags=["user"], response_model=schemas.UserResponse[schemas.User], dependencies=[Depends(jwtBearer())])
 async def user_register(user: schemas.UserCreate = Body(default=None), db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
@@ -113,13 +113,13 @@ def register_pet(pet: schemas.PetBase, db: Session = Depends(get_db)):
         return schemas.BaseResponse[schemas.Pet](success=True, content=db_pet)
 
 
-@app.get("/pets", tags=["pet"], response_model=schemas.BaseResponse[List[schemas.Pet]], dependencies=[Depends(jwtBearer())])
+@app.get("/pets", tags=["pet"], response_model=schemas.BaseResponse[List[schemas.Pet]])
 def list_pets(limit: int = 10, db: Session = Depends(get_db)):
     pets = crud.get_pets(db, limit)
     return schemas.BaseResponse[List[schemas.Pet]](success=True, content=pets)
 
 
-@app.get("/pet/{id}", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
+@app.get("/pet/{id}", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet])
 def get_pet(id: int, db: Session = Depends(get_db)):
     db_pet = crud.get_pet(db, id)
     if db_pet:
