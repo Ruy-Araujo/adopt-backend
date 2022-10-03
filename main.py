@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, Body, Depends, HTTPException
+from fastapi import FastAPI, Body, Depends, HTTPException, UploadFile, Form, File
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 from typing import List, Union
@@ -105,9 +105,24 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
 ###################
 
 
-@app.post("/pet/register", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
-def register_pet(pet: schemas.PetBase, db: Session = Depends(get_db)):
-    db_pet = crud.create_pet(db=db, pet=pet)
+@app.post("/pet/register", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet])
+def register_pet(nome: str = Form(example="Fido"),
+                 idade: int = Form(...),
+                 especie: str = Form(...),
+                 raca: str = Form(...),
+                 sexo: str = Form(...),
+                 observacoes: str = Form(...),
+                 foto: UploadFile = File(..., media_type="image/jpeg"),
+                 db: Session = Depends(get_db)):
+
+    if foto.content_type != "image/jpeg":
+        raise HTTPException(status_code=400, detail={"success": False, "message": "Image must be in JPEG format"})
+
+    foto_url = crud.upload_file(foto)
+    if not foto_url:
+        raise HTTPException(status_code=400, detail={"success": False, "message": "Error uploading file"})
+
+    db_pet = crud.create_pet(db, nome, idade, especie, raca, sexo, observacoes, foto_url)
 
     if db_pet:
         return schemas.BaseResponse[schemas.Pet](success=True, content=db_pet)

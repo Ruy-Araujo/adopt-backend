@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, Extra
 from typing import Any, Generic, List, Optional, TypeVar
 from pydantic.generics import GenericModel
+from datetime import datetime
 
 # Response
 DataType = TypeVar("DataType")
@@ -72,6 +73,8 @@ class UpdatePet(BaseModel):
 class Pet(PetBase):
     id: int = Field(example=1)
     adotado: bool = Field(example=False)
+    foto_url: Optional[str] = Field(example="https://xyz.jpg", )
+    data_cadastro: datetime = Field(example="2021-01-01T00:00:00")
 
     class Config:
         orm_mode = True

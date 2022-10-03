@@ -30,6 +30,7 @@ class Pet(Base):
     raca = Column(String)
     sexo = Column(String)
     observacoes = Column(String)
+    foto_url = Column(String)
     adotado = Column(Boolean, default=False)
     data_cadastro = Column(
         TIMESTAMP().with_variant(DATETIME2, "mssql"),
