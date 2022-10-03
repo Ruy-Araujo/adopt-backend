@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 
 from azure.storage.blob import BlobServiceClient
 
@@ -16,9 +17,15 @@ def upload_file(file_name, data):
         print(f"Erro ao conectar ao Azure Blob Storage: {e}")
 
     try:
-        blob_client.upload_blob(data)
+        upload_metadata = blob_client.upload_blob(data)
         logging.info(f"Arquivo {file_name} enviado com sucesso!")
         print(f"Arquivo {file_name} enviado com sucesso!")
+        return upload_metadata
+
     except Exception as e:
         logging.error(f"Erro ao fazer upload do arquivo: {e}")
         print(f"Erro ao fazer upload do arquivo: {e}")
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
