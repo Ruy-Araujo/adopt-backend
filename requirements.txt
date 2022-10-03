@@ -1,8 +1,9 @@
+azure-storage-blob
 fastapi==0.81.0
-python-multipart==0.0.5
-uvicorn==0.18.3
-PyJWT
-python-decouple
-sqlalchemy
-pyodbc
 passlib[bcrypt]
+pyodbc
+python-decouple
+python-multipart==0.0.5
+PyJWT
+uvicorn==0.18.3
+sqlalchemy
