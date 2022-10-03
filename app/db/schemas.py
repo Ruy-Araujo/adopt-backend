@@ -1,8 +1,26 @@
 from pydantic import BaseModel, Field, Extra
-from typing import Optional
+from typing import Any, Generic, List, Optional, TypeVar
+from pydantic.generics import GenericModel
+
+# Response
+DataType = TypeVar("DataType")
+
+
+class BaseResponse(GenericModel, Generic[DataType]):
+    success: bool = Field(..., example=True)
+    content: Optional[DataType] = Field(None, example={"id": 1, "name": "John Doe"})
+
+
+class UserResponse(GenericModel, Generic[DataType]):
+    success: bool = Field(..., example=True)
+    content: Optional[DataType] = Field(None, example={"id": 1, "name": "John Doe"})
+    access_token: str = Field(None)
+    expires: int = Field(1440)
 
 
 # User Schemas
+
+
 class UserBase(BaseModel):
     email: str = Field(example="fulano@email.com")
 
@@ -40,7 +58,6 @@ class PetBase(BaseModel):
     raca: str = Field(example="Vira-lata")
     sexo: str = Field(example="Macho")
     observacoes: str = Field(example="Cachorro muito brincalhão")
-    adotado: bool = Field(example=False)
 
 
 class UpdatePet(BaseModel):
@@ -54,6 +71,7 @@ class UpdatePet(BaseModel):
 
 class Pet(PetBase):
     id: int = Field(example=1)
+    adotado: bool = Field(example=False)
 
     class Config:
         orm_mode = True

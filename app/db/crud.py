@@ -49,7 +49,7 @@ def validate_user(db: Session, user: schemas.UserLogin):
     if not hashing.verify_password(user.senha, db_user.senha):
         return False
 
-    return True
+    return db_user
 
 
 def delete_user(db: Session, user_id: int):
@@ -59,7 +59,7 @@ def delete_user(db: Session, user_id: int):
 
     db.delete(db_user)
     db.commit()
-    return True
+    return db_user
 
 
 # Pet
@@ -91,7 +91,7 @@ def update_pet(db: Session, pet_id: int, pet: schemas.PetBase):
     db.add(db_pet)
     db.commit()
     db.refresh(db_pet)
-    return True
+    return db_pet
 
 
 def delete_pet(db: Session, pet_id: int):
@@ -101,4 +101,4 @@ def delete_pet(db: Session, pet_id: int):
 
     db.delete(db_pet)
     db.commit()
-    return True
+    return db_pet
