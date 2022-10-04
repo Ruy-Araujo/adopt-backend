@@ -105,7 +105,7 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
 ###################
 
 
-@app.post("/pet/register", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet])
+@app.post("/pet/register", tags=["pet"], response_model=schemas.BaseResponse[schemas.Pet], dependencies=[Depends(jwtBearer())])
 def register_pet(nome: str = Form(example="Fido"),
                  idade: int = Form(...),
                  especie: str = Form(...),
